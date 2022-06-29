@@ -1,2 +1,3 @@
 # logjs
-# logjs
+
+Enhanced logger for javascript.
