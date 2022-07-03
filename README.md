@@ -1,7 +1,7 @@
 # logjs
 
 ## Package description
-Enhanced logger for javascript. Able to colourise console oututs. Data arrays can be processed before outputting to console.
+Enhanced logger for javascript. Able to colourise console outputs. Data arrays can be processed before outputting to console.
 
 ## Logger usage
 ### Simple logger usage
@@ -16,28 +16,32 @@ test1.type('warn').p('Simple test message using defaults with type "info"')
 test1.type('error').p('Simple test message using defaults with type "error"')
 ````
 
-![example.image.1-w500](media/example.image.1.png)
-
+<img src="media/example.image.1.png" width="500"/>
 
 ### Advanced usage
-#### Test all styles for all types including label.
+#### Styled console logs.
+Stepping through all the styles in Style object, with the console methods of log, warn, and error. This Style object can be customised by editing the CSS, and new styles can be added.
 ````javascript
 import Logger, { Styles, Processors } from '@hveluwenkamp/logjs'
 
 const test2 = Logger('Function Label', { styles: Styles, processors: Processors })
 
 const styles = Object.keys(Styles)
-const types = ['log', 'warn', 'error'] // allowed console methods
-styles.forEach(style => {
+const types = ['log', 'warn', 'error'] // useful console methods
+styles.forEach(style => { // iterate over all styles in Style Object
     types.forEach(type => {
         test2.p(`Some text with style '${style}' and type '${type}'`, { style, type })
     })
 })
 ````
+<img src="media/example.image.2.png" width="500"/>
 
-![example.image.2-w500](media/example.image.2.png)
+#### Array data
+Array data can be output using the console methods of log, dir, and table. 
 
-#### Display of array data with and without processing
+This data can be processed using the functions in the Processors object. This object can be customised also.
+
+The processing functions included are upper and lower case (**'upper'** and **'lower'**), splitting out parts of values to the left and right (**'left,&lt;symbol'>** and **'right,&lt;symbol'>**)of a given symbol, conversion to JSON (**'json'**)  ISO8601 date conversions using built-in javascript date methods (**'date,[toTimeString|toDateString|...]'**), and conversion of Unix timestamps to date fragments (**'ux,[date|timedate|day|time|dow]'**).
 ````javascript
 import Logger, { Styles, Processors } from '@hveluwenkamp/logjs'
 import ExampleData from './example.data.js'
@@ -58,5 +62,4 @@ test2.set(ExampleData)
     .out('table')
 ````
 
-![example.image.3](media/example.image.3.png)
-
+<img src="media/example.image.3.png"/>
