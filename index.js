@@ -72,18 +72,12 @@ const LogJS = function (label = '', params = {}) {
     const include = function (params) {
         if (data.length === 0) return this
 
-        data = data.map((row) => {
-            return params
-                .map((key) => ({ name: key, value: row[key] }))
-                .reduce(
-                    (
-                        accumulator,
-                        current // convert to object with names as keys
-                    ) => ({ ...accumulator, [current.name]: current.value }),
-                    {}
-                )
-        })
-
+        // only include fields with names specified in the params array
+        data = data.map((row) => (
+            Object.entries(row).filter(([key]) => params.includes(key))
+                // convert back to object
+                .reduce((accumulator, current) => ({ ...accumulator, [current[0]]: current[1] }), {})
+        ))
         return this
     }
 
@@ -114,8 +108,8 @@ const LogJS = function (label = '', params = {}) {
         const processors = namesAllFields
             .map((nameField) => {
                 let processor
-                // set default processor to identity and options to null
 
+                // set default processor to identity and options to null
                 if (keysToProcess.includes(nameField)) {
                     let keyProcessor = params[nameField]
                     let keyOptions = null
@@ -134,39 +128,34 @@ const LogJS = function (label = '', params = {}) {
                         processor = processorIdentity
                     }
 
-                    return { name: nameField, processor }
+                    return { [nameField]: processor }
                 } else {
                     // no processor specified
-                    return { name: nameField, processor: processorIdentity }
+                    return { [nameField]: processorIdentity }
                 }
-
-                // convert to object with names as keys
             })
-            .reduce(
-                (accumulator, current) => ({
-                    ...accumulator,
-                    [current.name]: current.processor
-                }),
-                {}
-            )
+            // convert to object with names as keys
+            .reduce((accumulator, current) => {
+                const key = Object.keys(current)[0]
+                const val = Object.values(current)[0]
+                return { ...accumulator, [key]: val }
+            }, {})
 
         // apply processor to each row of data
         data = data.map((row) =>
             namesAllFields
                 .map((nameField) => ({
-                    name: nameField,
-                    value: processors[nameField].fn(
+                    [nameField]: processors[nameField].fn(
                         row[nameField],
                         processors[nameField].options
                     )
                 }))
-                .reduce(
-                    (
-                        accumulator,
-                        current // convert to object with names as keys
-                    ) => ({ ...accumulator, [current.name]: current.value }),
-                    {}
-                )
+                // convert to object with names as keys
+                .reduce((accumulator, current) => {
+                    const key = Object.keys(current)[0]
+                    const val = Object.values(current)[0]
+                    return { ...accumulator, [key]: val }
+                }, {})
         )
 
         return this
