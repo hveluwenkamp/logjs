@@ -1,8 +1,7 @@
 'use-strict'
 
 import Logger, { Styles, Processors } from '@hveluwenkamp/logjs'
-import ExampleData from './example.data.js'
-// import ExampleData from './node_modules/@hveluwenkamp/logjs/example.data.js'
+import ExampleData from '@hveluwenkamp/logjs/examples/example.data'
 
 const example1 = Logger()
 const example2 = Logger('Function Label', { styles: Styles, processors: Processors })
