@@ -46,7 +46,7 @@ This data can be processed using the functions in the Processors object. This ob
 The processing functions included are upper and lower case (**'upper'** and **'lower'**), splitting out parts of values to the left and right (**'left,&lt;symbol'>** and **'right,&lt;symbol'>**)of a given symbol, conversion to JSON (**'json'**)  date conversions using built-in javascript date methods (**'date,[toTimeString|toDateString|...]'**), and conversion of Unix timestamps to dates and date fragments (**'ux,[datetime|date|day|time|dow]'**).
 ````javascript
 import Logger, { Styles, Processors } from '@hveluwenkamp/logjs'
-import ExampleData from './example.data.js'
+import ExampleData from '@hveluwenkamp/logjs/examples/example.data'
 
 const example2 = Logger('Function Label', { styles: Styles, processors: Processors })
 
