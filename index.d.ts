@@ -43,8 +43,10 @@ declare function LogJS(label?: string, params?: {}): {
     type: (type?: string) => any;
     style: (style?: string) => any;
     set: (input: any) => any;
-    out: (out?: string) => any;
-    include: (params: any) => any;
+    get: (get?: string) => any;
+    out: (type?: any) => any;
+    include: (list: any) => any;
+    exclude: (list: any) => any;
     limit: (params: any) => any;
-    process: (params: any) => any;
+    process: (namesFieldsToProcess: any) => any;
 };
