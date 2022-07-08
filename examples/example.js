@@ -47,3 +47,11 @@ example2.set(ExampleData)
     timezone: 'upper'
   })
   .out('table')
+
+example2.set(ExampleData)
+  .limit(2)
+  .exclude(['lastName', 'timezone', 'iso8601'])
+  .process({
+    unixTime: 'ux,datetime'
+  })
+  .out('table')
