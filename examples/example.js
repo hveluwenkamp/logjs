@@ -9,10 +9,10 @@ const example2 = Logger('Function Label', { styles: Styles, processors: Processo
 example1.clear().whoami() // default name is 'logjs'
 
 // simple test with no label
-example2.p('Simple test message using defaults')
-example2.type('log').p('Simple test message using defaults with console method "log"')
-example2.type('warn').p('Simple test message using defaults with console method "warn"')
-example2.type('error').p('Simple test message using defaults with console method "error"')
+example1.p('Simple test message using defaults')
+example1.type('log').p('Simple test message using defaults with console method "log"')
+example1.type('warn').p('Simple test message using defaults with console method "warn"')
+example1.type('error').p('Simple test message using defaults with console method "error"')
 
 // test all styles for all methods types
 const styles = Object.keys(Styles)
