@@ -4,9 +4,9 @@ const LogJS = function (label = '', params = {}) {
   const config = {
     label,
     style: 'default',
-    styles: { default: { label: '', mesage: '' } },
+    styles: { default: { label: '', message: '' } },
     type: 'log',
-    out: 'dir',
+    get: 'raw',
     ...params // override defaults from params
   }
 
@@ -17,19 +17,19 @@ const LogJS = function (label = '', params = {}) {
   const clear = function () {
     console.clear()
     const label = config.label ? config.label : 'logjs'
-    console.log(`CLEARED by '${label}'`)
+    console.log("CLEARED by '" + label + "'")
     return this
   }
 
   const whoami = function () {
     const label = config.label ? config.label : 'logjs'
-    console.log(`THIS is '${label}'`)
+    console.log("THIS is '" + label + "'")
     return this
   }
 
   /* Simple logging methods */
 
-  // pretty print to the console with ability to override default style and method
+  // pretty print to the console with ability to override default style and type
   const p = function (input, params = { style: config.style, type: config.type }) {
     const { style, type } = params
 
@@ -55,7 +55,7 @@ const LogJS = function (label = '', params = {}) {
     return this
   }
 
-  // set the default method type to be used for console output
+  // set the default type to be used for console output
   const type = function (type = config.type) {
     config.type = type
     return this
@@ -70,19 +70,29 @@ const LogJS = function (label = '', params = {}) {
     return this
   }
 
-  const include = function (params) {
+  const include = function (list) {
     if (data.length === 0) return this
 
-    // only include fields with names specified in the params array
+    // only include fields with names specified in the list array
     data = data.map((row) => (
-      Object.entries(row).filter(([key]) => params.includes(key))
+      Object.entries(row).filter(([key]) => list.includes(key))
       // convert back to object
-        .reduce((accumulator, current) => ({ ...accumulator, [current[0]]: current[1] }), {})
+        .reduce(_reducerArray, {})
     ))
     return this
   }
 
-  // limit the rows to be output
+  const exclude = function (list) {
+    // only include fields with names specified in the list array
+    data = data.map((row) => (
+      Object.entries(row).filter(([key]) => !list.includes(key))
+      // convert back to object
+        .reduce(_reducerArray, {})
+    ))
+    return this
+  }
+
+  // limit the rows to be output by mutating data
   const limit = function (params) {
     if (Array.isArray(params)) {
       data = data.slice(params[0], params[0] + params[1])
@@ -92,15 +102,23 @@ const LogJS = function (label = '', params = {}) {
     return this
   }
 
+  const get = function (get = config.get) {
+    const functionGet = {
+      string: (data) => JSON.stringify(data, null, 2),
+      raw: (data) => data
+    }
+    const lookupGet = ['string'].includes(get) ? get : 'raw'
+    return functionGet[lookupGet](data)
+  }
+
   /*
-     * Iterate over fields defined in params and process them with
-     *   the named processor.
-     */
-  const process = function (params) {
+  * Iterate over fields defined in params and process them with the named processor.
+  */
+  const process = function (namesFieldsToProcess) {
     if (data.length === 0) return this
 
     const keysProcessor = Object.keys(config.processors) // processor keys
-    const keysToProcess = Object.keys(params) // which fields to process
+    const keysToProcess = Object.keys(namesFieldsToProcess) // which fields to process
     const namesAllFields = Object.keys(data[0]) // all field names
 
     const processorIdentity = { fn: (value) => value, options: null }
@@ -112,7 +130,7 @@ const LogJS = function (label = '', params = {}) {
 
         // set default processor to identity and options to null
         if (keysToProcess.includes(nameField)) {
-          let keyProcessor = params[nameField]
+          let keyProcessor = namesFieldsToProcess[nameField]
           let keyOptions = null
 
           if (keyProcessor.includes(',')) {
@@ -135,12 +153,7 @@ const LogJS = function (label = '', params = {}) {
           return { [nameField]: processorIdentity }
         }
       })
-    // convert back to object
-      .reduce((accumulator, current) => {
-        const key = Object.keys(current)[0]
-        const val = Object.values(current)[0]
-        return { ...accumulator, [key]: val }
-      }, {})
+      .reduce(_reducerObject, {}) // convert to object with names as keys
 
     // apply processor to each row of data
     data = data.map((row) =>
@@ -151,40 +164,40 @@ const LogJS = function (label = '', params = {}) {
             processors[nameField].options
           )
         }))
-      // convert back to object
-        .reduce((accumulator, current) => {
-          const key = Object.keys(current)[0]
-          const val = Object.values(current)[0]
-          return { ...accumulator, [key]: val }
-        }, {})
+        .reduce(_reducerObject, {}) // convert to object with names as keys
     )
 
     return this
   }
 
   // output data to console using standard console methods
-  const out = function (out = config.out) {
+  const out = function (type = config.out) {
     if (data.length === 0) return null
 
-    switch (out) {
-      case 'dir':
-        console.dir(data)
-        break
-      case 'table':
-        console.table(data)
-        break
-      case 'json':
-        console.log(JSON.stringify(data))
-        break
-      case 'log':
-      default:
-        console.log(data)
+    const functionOutput = {
+      dir: (data) => console.dir(data),
+      json: (data) => console.log(JSON.stringify(data, null, 2)),
+      table: (data) => console.table(data),
+      log: (data) => console.log(data)
     }
+    const lookupType = ['dir', 'json', 'table', 'log'].includes(type) ? type : 'log'
+    functionOutput[lookupType](data)
+
     return this
   }
 
-  return { clear, whoami, p, type, style, set, out, include, limit, process }
+  return { clear, whoami, p, type, style, set, get, out, include, exclude, limit, process }
 }
+
+// Reducer function to convert object
+const _reducerObject = (accumulator, current) => {
+  const key = Object.keys(current)[0]
+  const val = Object.values(current)[0]
+  return { ...accumulator, [key]: val }
+}
+
+// Reducer function to convert array
+const _reducerArray = (accumulator, current) => ({ ...accumulator, [current[0]]: current[1] })
 
 export default LogJS
 
