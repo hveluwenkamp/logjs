@@ -77,12 +77,13 @@ const LogJS = function (label = '', params = {}) {
     data = data.map((row) => Object.fromEntries(
       Object.entries(row).filter(([key]) => list.includes(key))
     ))
-    console.log(data)
     return this
   }
 
   const exclude = function (list) {
-    // only include fields with names specified in the list array
+    if (data.length === 0) return this
+
+    // exclude fields with names specified in the list array
     data = data.map((row) => Object.fromEntries(
       Object.entries(row).filter(([key]) => !list.includes(key))
     ))
