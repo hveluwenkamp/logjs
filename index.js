@@ -74,20 +74,17 @@ const LogJS = function (label = '', params = {}) {
     if (data.length === 0) return this
 
     // only include fields with names specified in the list array
-    data = data.map((row) => (
+    data = data.map((row) => Object.fromEntries(
       Object.entries(row).filter(([key]) => list.includes(key))
-      // convert back to object
-        .reduce(_reducerArray, {})
     ))
+    console.log(data)
     return this
   }
 
   const exclude = function (list) {
     // only include fields with names specified in the list array
-    data = data.map((row) => (
+    data = data.map((row) => Object.fromEntries(
       Object.entries(row).filter(([key]) => !list.includes(key))
-      // convert back to object
-        .reduce(_reducerArray, {})
     ))
     return this
   }
@@ -124,7 +121,7 @@ const LogJS = function (label = '', params = {}) {
     const processorIdentity = { fn: (value) => value, options: null }
 
     // find processor functions by row
-    const processors = namesAllFields
+    const processors = Object.fromEntries(namesAllFields
       .map((nameField) => {
         let processor
 
@@ -143,28 +140,26 @@ const LogJS = function (label = '', params = {}) {
               options: keyOptions
             }
           } else {
-            // cannot find processor
-            processor = processorIdentity
+            processor = processorIdentity // cannot find processor
           }
 
-          return { [nameField]: processor }
+          return [[nameField], processor]
         } else {
-          // no processor specified
-          return { [nameField]: processorIdentity }
+          return [[nameField], processorIdentity] // no processor specified
         }
       })
-      .reduce(_reducerObject, {}) // convert to object with names as keys
+    )
 
     // apply processor to each row of data
     data = data.map((row) =>
-      namesAllFields
-        .map((nameField) => ({
-          [nameField]: processors[nameField].fn(
+      Object.fromEntries(namesAllFields
+        .map((nameField) => ([
+          [nameField], processors[nameField].fn(
             row[nameField],
             processors[nameField].options
           )
-        }))
-        .reduce(_reducerObject, {}) // convert to object with names as keys
+        ]))
+      )
     )
 
     return this
@@ -188,16 +183,6 @@ const LogJS = function (label = '', params = {}) {
 
   return { clear, whoami, p, type, style, set, get, out, include, exclude, limit, process }
 }
-
-// Reducer function to convert object
-const _reducerObject = (accumulator, current) => {
-  const key = Object.keys(current)[0]
-  const val = Object.values(current)[0]
-  return { ...accumulator, [key]: val }
-}
-
-// Reducer function to convert array
-const _reducerArray = (accumulator, current) => ({ ...accumulator, [current[0]]: current[1] })
 
 export default LogJS
 
